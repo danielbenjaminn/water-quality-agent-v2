@@ -155,6 +155,7 @@ def carregar_csv(
 
     # Remove apenas colunas completamente vazias.
     df = df.dropna(axis=1, how="all")
+    # df = df.drop(df.columns[-1], axis=1)
 
 
     return ResultadoCarga(

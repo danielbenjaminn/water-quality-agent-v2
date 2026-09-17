@@ -45,6 +45,13 @@ class ColumnInterpretation(BaseModel):
     meaning: str = "Não utilizada / significado não necessário ao domínio"
     confidence: float | None = None
 
+class CleaningReport(BaseModel):
+    original_rows: int
+    removed_rows: int
+    remaining_rows: int
+    invalid_or_missing_date: int = 0
+    missing_parameter: int = 0
+    missing_point: int = 0
 
 class IngestionReport(BaseModel):
     valid: bool
@@ -54,5 +61,6 @@ class IngestionReport(BaseModel):
     required_found: list[str]
     required_missing: list[str]
     point_inferred: bool = False
+    cleaning: CleaningReport | None = None
     notes: list[str] = Field(default_factory=list)
     message: str

@@ -3,16 +3,57 @@ import pandas as pd
 
 from .models import (
     ALL_FIELDS, FIELD_DESCRIPTIONS, REQUIRED_FIELDS,
-    ColumnInterpretation, IngestionReport, SemanticMapping,
+    CleaningReport, ColumnInterpretation, IngestionReport, SemanticMapping,
 )
 
 SINGLE_POINT_VALUE = "__SINGLE_POINT__"
 
 
-def canonicalize(df: pd.DataFrame, mapping: dict[str, str | None]) -> pd.DataFrame:
-    rename = {original: semantic for semantic, original in mapping.items() if original}
-    return df.rename(columns=rename).copy()
+def canonicalize(
+    df: pd.DataFrame,
+    mapping: dict[str, str | None],
+) -> pd.DataFrame:
+    rename = {
+        original: semantic
+        for semantic, original in mapping.items()
+        if original
+    }
 
+    canonical = df.rename(columns=rename).copy()
+
+    canonical["date"] = pd.to_datetime(
+        canonical["date"],
+        errors="coerce",
+        format="mixed",
+        dayfirst=True,
+    )
+
+    return canonical
+
+def clean_required_observations(
+    df: pd.DataFrame,
+    point_present: bool,
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    invalid_date = df["date"].isna()
+    missing_parameter = df["parameter"].isna()
+
+    remove_mask = invalid_date | missing_parameter
+
+    removed_by_reason = {
+        "invalid_or_missing_date": int(invalid_date.sum()),
+        "missing_parameter": int(missing_parameter.sum()),
+    }
+
+    if point_present:
+        missing_point = df["point"].isna()
+        remove_mask |= missing_point
+        removed_by_reason["missing_point"] = int(missing_point.sum())
+
+    removed_by_reason["total_removed"] = int(remove_mask.sum())
+
+    cleaned = df.loc[~remove_mask].copy()
+
+    return cleaned, removed_by_reason
 
 def validate_and_canonicalize(df: pd.DataFrame, semantic: SemanticMapping) -> tuple[pd.DataFrame | None, IngestionReport]:
     mapping = semantic.mapping
@@ -38,11 +79,51 @@ def validate_and_canonicalize(df: pd.DataFrame, semantic: SemanticMapping) -> tu
 
     if valid:
         canonical = canonicalize(df, mapping)
+
         if point_inferred:
             canonical["point"] = SINGLE_POINT_VALUE
+
+        canonical, cleaning = clean_required_observations(
+            canonical,
+            point_present=not point_inferred,
+        )
+        cleaning_report = CleaningReport(
+            original_rows=len(df),
+            removed_rows=cleaning["total_removed"],
+            remaining_rows=len(canonical),
+            invalid_or_missing_date=cleaning["invalid_or_missing_date"],
+            missing_parameter=cleaning["missing_parameter"],
+            missing_point=cleaning.get("missing_point", 0),
+        )
+        total_removed = cleaning["total_removed"]
+
+        if total_removed > 0:
+            details = []
+
+            if cleaning["invalid_or_missing_date"] > 0:
+                details.append(
+                    f"{cleaning['invalid_or_missing_date']} com data ausente ou inválida"
+                )
+
+            if cleaning["missing_parameter"] > 0:
+                details.append(
+                    f"{cleaning['missing_parameter']} sem parâmetro"
+                )
+
+            if cleaning.get("missing_point", 0) > 0:
+                details.append(
+                    f"{cleaning['missing_point']} sem ponto"
+                )
+
+            notes.append(
+                f"Foram removidos {total_removed} registros sem informações "
+                f"mínimas para análise ({'; '.join(details)})."
+            )
+
         message = "Base apta para análise: data, parâmetro, resultado e unidade foram identificados."
     else:
         canonical = None
+        cleaning_report = None
         labels = ", ".join(missing)
         message = f"Base bloqueada: não foi possível identificar os campos obrigatórios: {labels}."
 
@@ -54,6 +135,7 @@ def validate_and_canonicalize(df: pd.DataFrame, semantic: SemanticMapping) -> tu
         required_found=found,
         required_missing=missing,
         point_inferred=point_inferred,
+        cleaning=cleaning_report,
         notes=notes,
         message=message,
     )

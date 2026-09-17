@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 
 from water_quality_agent.ingestion.service import ingest_dataset
+from water_quality_agent.core.session import SESSION
 
 
 load_dotenv()
@@ -28,3 +29,21 @@ pprint(result["capabilities"])
 
 print("\n=== METADADOS ===")
 pprint(result["metadata"])
+
+print("\n=== DATASET CANÔNICO ===")
+
+if SESSION.canonical is not None:
+    print(SESSION.canonical.head(10))
+
+    print("\nColunas:")
+    print(SESSION.canonical.columns.tolist())
+
+    print("\nTipos:")
+    print(SESSION.canonical.dtypes)
+
+    print("\nShape:")
+    print(SESSION.canonical.shape)
+else:
+    print("Nenhum dataset canônico ativo.")
+    print("Ingestão válida:", result["valid"])
+    print("Campos ausentes:", result["report"]["required_missing"])
