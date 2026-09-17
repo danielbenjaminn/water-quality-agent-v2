@@ -1,0 +1,17 @@
+domain:
+  name: "Qualidade de águas superficiais doces — CONAMA Classe 2"
+regulation:
+  primary: "CONAMA 357/2005"
+  class: "Classe 2"
+principles:
+  - "schema de entrada é variável e deve ser mapeado semanticamente"
+  - "DataFrame permanece no backend; LLM acessa dados por tools"
+  - "tools são capacidades pequenas e determinísticas"
+  - "skills orquestram tools conforme a pergunta, sem pipeline analítica fixa"
+  - "RAG fundamenta interpretação; não substitui cálculo determinístico"
+out_of_scope:
+  - "águas subterrâneas"
+  - "efluentes"
+  - "água potável"
+  - "águas salobras/salinas"
+  - "inferência causal automática"

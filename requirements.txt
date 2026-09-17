@@ -1,0 +1,62 @@
+# =========================
+# Data / Numerical
+# =========================
+pandas
+numpy
+scipy
+
+# =========================
+# Statistics
+# =========================
+statsmodels
+scikit-learn
+pymannkendall
+
+# =========================
+# Visualization
+# =========================
+matplotlib
+plotly
+
+# =========================
+# Agent / LLM
+# =========================
+langchain
+langchain-core
+langchain-community
+langgraph
+
+# Groq
+langchain-groq
+groq
+
+# =========================
+# RAG / Embeddings
+# =========================
+faiss-cpu
+sentence-transformers
+
+# =========================
+# Document / PDF ingestion
+# =========================
+pypdf
+pdfplumber
+
+# =========================
+# Data validation / config
+# =========================
+pydantic
+python-dotenv
+PyYAML
+
+# =========================
+# Utilities
+# =========================
+rapidfuzz
+unidecode
+chardet
+
+# =========================
+# Testing
+# =========================
+pytest

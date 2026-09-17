@@ -1,0 +1,98 @@
+Data;Ponto;Parâmetro;Resultado;Unidade
+01/09/2026;P01;OD;6,2;mg/L
+01/09/2026;P01;Turbidez;12,5;NTU
+01/09/2026;P01;pH;7,1;-
+02/09/2026;P01;Índice Fenóis;<5,0;mg/L
+02/09/2026;P01;Fósforo T.;0,08;mg/L
+03/09/2026;P01;DBO 5 dias a 20°C;3,8;mg/L O2
+03/09/2026;P01;Cor verdadeira;42;mg Pt/L
+03/09/2026;P01;Clorofila a;18,4;µg/L
+03/09/2026;P01;Densidade de cianobactérias;18500;cel/mL
+03/09/2026;P01;Sólidos dissolvidos totais;214;mg/L
+03/09/2026;P01;Coliformes termotolerantes;460;NMP/100mL
+04/09/2026;P01;Alumínio dissolvido;0,07;mg/L Al
+04/09/2026;P01;Antimônio;<0,002;mg/L Sb
+04/09/2026;P01;Arsênio total;0,004;mg/L As
+04/09/2026;P01;Bário total;0,18;mg/L Ba
+04/09/2026;P01;Berílio total;<0,01;mg/L Be
+04/09/2026;P01;Boro total;0,21;mg/L B
+04/09/2026;P01;Cádmio total;<0,0005;mg/L Cd
+04/09/2026;P01;Chumbo total;0,006;mg/L Pb
+04/09/2026;P01;Cianeto livre;<0,002;mg/L CN
+04/09/2026;P01;Cloreto total;34,7;mg/L Cl
+04/09/2026;P01;Cloro residual total;<0,005;mg/L Cl
+04/09/2026;P01;Cobalto total;0,012;mg/L Co
+04/09/2026;P01;Cobre dissolvido;0,006;mg/L Cu
+04/09/2026;P01;Cromo total;0,018;mg/L Cr
+04/09/2026;P01;Ferro dissolvido;0,22;mg/L Fe
+04/09/2026;P01;Fluoreto total;0,63;mg/L F
+04/09/2026;P01;Fósforo Total;0,028;mg/L P
+04/09/2026;P01;Lítio total;0,16;mg/L Li
+04/09/2026;P01;Manganês total;0,072;mg/L Mn
+04/09/2026;P01;Mercúrio total;<0,0001;mg/L Hg
+04/09/2026;P01;Níquel total;0,011;mg/L Ni
+04/09/2026;P01;Nitrato;2,6;mg/L N
+04/09/2026;P01;Nitrito;0,12;mg/L N
+04/09/2026;P01;Nitrogênio amoniacal total;0,48;mg/L N
+04/09/2026;P01;Nitrogênio total;1,14;mg/L N
+04/09/2026;P01;Prata total;<0,005;mg/L Ag
+04/09/2026;P01;Selênio total;0,004;mg/L Se
+04/09/2026;P01;Sulfato total;41,2;mg/L SO4
+04/09/2026;P01;Sulfeto (H2S não dissociado);<0,001;mg/L S
+04/09/2026;P01;Urânio total;0,006;mg/L U
+04/09/2026;P01;Vanádio total;0,032;mg/L V
+04/09/2026;P01;Zinco total;0,083;mg/L Zn
+05/09/2026;P01;Acrilamida;<0,2;µg/L
+05/09/2026;P01;Alacloro;<5,0;µg/L
+05/09/2026;P01;Aldrin + Dieldrin;<0,002;µg/L
+05/09/2026;P01;Atrazina;0,7;µg/L
+05/09/2026;P01;Benzeno;<0,002;mg/L
+05/09/2026;P01;Benzidina;<0,0005;µg/L
+05/09/2026;P01;Benzo(a)antraceno;0,012;µg/L
+05/09/2026;P01;Benzo(a)pireno;0,018;µg/L
+05/09/2026;P01;Benzo(b)fluoranteno;0,016;µg/L
+05/09/2026;P01;Benzo(k)fluoranteno;0,011;µg/L
+05/09/2026;P01;Carbaril;<0,01;µg/L
+05/09/2026;P01;Clordano (cis + trans);<0,02;µg/L
+05/09/2026;P01;2-Clorofenol;<0,05;µg/L
+05/09/2026;P01;Criseno;0,014;µg/L
+05/09/2026;P01;2,4-D;1,2;µg/L
+05/09/2026;P01;Demeton (Demeton-O + Demeton-S);<0,05;µg/L
+05/09/2026;P01;Dibenzo(a,h)antraceno;0,009;µg/L
+05/09/2026;P01;1,2-Dicloroetano;<0,005;mg/L
+05/09/2026;P01;1,1-Dicloroeteno;<0,001;mg/L
+05/09/2026;P01;2,4-Diclorofenol;<0,1;µg/L
+05/09/2026;P01;Diclorometano;<0,01;mg/L
+05/09/2026;P01;DDT (p,p'-DDT + p,p'-DDE + p,p'-DDD);<0,001;µg/L
+05/09/2026;P01;Dodecacloro pentaciclodecano;<0,0005;µg/L
+05/09/2026;P01;Endossulfan (alfa + beta + sulfato);<0,02;µg/L
+05/09/2026;P01;Endrin;<0,002;µg/L
+05/09/2026;P01;Estireno;<0,01;mg/L
+05/09/2026;P01;Etilbenzeno;24,0;µg/L
+05/09/2026;P01;Fenóis totais;0,002;mg/L C6H5OH
+05/09/2026;P01;Glifosato;18;µg/L
+05/09/2026;P01;Gution;<0,002;µg/L
+05/09/2026;P01;Heptacloro epóxido + Heptacloro;<0,005;µg/L
+05/09/2026;P01;Hexaclorobenzeno;<0,002;µg/L
+05/09/2026;P01;Indeno(1,2,3-cd)pireno;0,013;µg/L
+05/09/2026;P01;Lindano (γ-HCH);<0,01;µg/L
+05/09/2026;P01;Malation;<0,05;µg/L
+05/09/2026;P01;Metolacloro;2,4;µg/L
+05/09/2026;P01;Metoxicloro;<0,01;µg/L
+05/09/2026;P01;Paration;<0,02;µg/L
+05/09/2026;P01;PCBs - Bifenilas policloradas;<0,0005;µg/L
+05/09/2026;P01;Pentaclorofenol;<0,004;mg/L
+05/09/2026;P01;Simazina;0,8;µg/L
+05/09/2026;P01;Substâncias tensoativas que reagem com azul de metileno;0,18;mg/L LAS
+05/09/2026;P01;2,4,5-T;<1,0;µg/L
+05/09/2026;P01;Tetracloreto de carbono;<0,001;mg/L
+05/09/2026;P01;Tetracloroeteno;<0,005;mg/L
+05/09/2026;P01;Tolueno;0,8;µg/L
+05/09/2026;P01;Toxafeno;<0,005;µg/L
+05/09/2026;P01;2,4,5-TP;<5,0;µg/L
+05/09/2026;P01;Tributilestanho;<0,03;µg/L TBT
+05/09/2026;P01;Triclorobenzeno (1,2,3-TCB + 1,2,4-TCB);<0,01;mg/L
+05/09/2026;P01;Tricloroeteno;<0,01;mg/L
+05/09/2026;P01;2,4,6-Triclorofenol;<0,005;mg/L
+05/09/2026;P01;Trifluralina;<0,1;µg/L
+05/09/2026;P01;Xileno;42;µg/L
