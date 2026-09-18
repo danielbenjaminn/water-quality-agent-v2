@@ -7,19 +7,34 @@ from water_quality_agent.core.descriptive import descriptive_analysis
 from water_quality_agent.core.trend import mann_kendall_analysis
 from water_quality_agent.core.correlation import correlation_analysis
 from water_quality_agent.core.outliers import flag_iqr_outliers
+from water_quality_agent.tools.data_tools import select_series
 
 
-def _records_df(
-    observations: list[dict],
+def _analysis_df(
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> pd.DataFrame:
     """
-    Adapta observações do schema canônico para o schema esperado
-    pelos módulos estatísticos legados.
+    Recupera uma série diretamente do dataset harmonizado no backend
+    e adapta somente o schema para os módulos estatísticos legados.
 
-    Não executa limpeza, resolução de parâmetros, extração de
-    qualifiers ou conversão de unidades.
+    Não executa:
+    - resolução de parâmetro;
+    - extração de qualifier;
+    - conversão de unidade;
+    - limpeza semântica.
+
+    `parameter` deve ser o nome canônico previamente resolvido.
     """
-    df = pd.DataFrame(observations)
+
+    df = select_series(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
     rename = {
         "parameter": "Parâmetro B.D.",
@@ -43,38 +58,63 @@ def _records_df(
 
 @tool
 def descriptive_statistics(
-    observations: list[dict],
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[dict]:
     """
-    Calcula estatísticas descritivas sobre as observações fornecidas.
+    Calcula estatísticas descritivas diretamente sobre uma série
+    armazenada no backend.
 
-    Os dados devem ter sido previamente harmonizados.
+    `parameter` deve ser o nome canônico previamente resolvido.
     """
-    if not observations:
-        return []
 
-    df = _records_df(observations)
+    df = _analysis_df(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if df.empty:
+        return []
 
     return descriptive_analysis(
         df=df,
         parameter_col="Parâmetro B.D.",
         value_col="Resultado Num",
-        point_col="Ponto" if "Ponto" in df.columns else None,
+        point_col=(
+            "Ponto"
+            if "Ponto" in df.columns
+            else None
+        ),
     )
 
 
 @tool
 def mann_kendall_trend(
-    observations: list[dict],
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[dict]:
     """
-    Executa análise de tendência Mann-Kendall sobre a série
-    fornecida.
-    """
-    if not observations:
-        return []
+    Executa análise de tendência Mann-Kendall diretamente sobre
+    uma série armazenada no backend.
 
-    df = _records_df(observations)
+    `parameter` deve ser o nome canônico previamente resolvido.
+    """
+
+    df = _analysis_df(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if df.empty:
+        return []
 
     return mann_kendall_analysis(
         df,
@@ -84,33 +124,30 @@ def mann_kendall_trend(
 
 
 @tool
-def kendall_correlations(
-    observations: list[dict],
-) -> list[dict]:
-    """
-    Calcula correlações de Kendall sobre o subconjunto fornecido.
-    """
-    if not observations:
-        return []
-
-    df = _records_df(observations)
-
-    return correlation_analysis(df)
-
-
-@tool
 def iqr_outliers(
-    observations: list[dict],
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[dict]:
     """
-    Identifica observações pelo critério IQR.
+    Identifica observações pelo critério IQR diretamente sobre
+    uma série armazenada no backend.
 
     As observações são marcadas, não removidas.
-    """
-    if not observations:
-        return []
 
-    df = _records_df(observations)
+    `parameter` deve ser o nome canônico previamente resolvido.
+    """
+
+    df = _analysis_df(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    if df.empty:
+        return []
 
     result = flag_iqr_outliers(df)
 
@@ -120,3 +157,41 @@ def iqr_outliers(
         .where(pd.notna(result), None)
         .to_dict("records")
     )
+
+
+@tool
+def kendall_correlations(
+    observations: list[dict],
+) -> list[dict]:
+    """
+    Calcula correlações de Kendall sobre o subconjunto fornecido.
+
+    ATENÇÃO:
+    Esta tool ainda mantém temporariamente o contrato antigo.
+    Será refatorada separadamente porque correlação envolve
+    múltiplos parâmetros.
+    """
+
+    if not observations:
+        return []
+
+    df = pd.DataFrame(observations)
+
+    rename = {
+        "parameter": "Parâmetro B.D.",
+        "result": "Resultado Num",
+        "point": "Ponto",
+        "date": "Data",
+        "qualifier": "Qualifier",
+        "unit": "Unidade",
+    }
+
+    df = df.rename(columns=rename)
+
+    if "Resultado Num" in df.columns:
+        df["Resultado Num"] = pd.to_numeric(
+            df["Resultado Num"],
+            errors="coerce",
+        )
+
+    return correlation_analysis(df)

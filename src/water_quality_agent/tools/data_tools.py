@@ -73,6 +73,68 @@ def resolve_water_parameter(name: str) -> dict:
     """
     return resolve_parameter(name)
 
+def select_series(
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> pd.DataFrame:
+    """
+    Seleciona uma série diretamente do dataset harmonizado no backend.
+
+    Esta é uma função Python interna. Não é uma tool e, portanto,
+    os dados selecionados não trafegam pelo LLM.
+
+    `parameter` deve ser o nome canônico previamente resolvido.
+    """
+    df = SESSION.require_data().copy()
+
+    if "parameter" not in df.columns:
+        raise ValueError(
+            "Dataset harmonizado não possui a coluna 'parameter'."
+        )
+
+    mask = (
+        df["parameter"]
+        .astype(str)
+        .str.casefold()
+        .eq(parameter.casefold())
+    )
+
+    if point is not None:
+        if "point" not in df.columns:
+            raise ValueError(
+                "Dataset harmonizado não possui a coluna 'point'."
+            )
+
+        mask &= (
+            df["point"]
+            .astype(str)
+            .str.casefold()
+            .eq(point.casefold())
+        )
+
+    selected = df.loc[mask].copy()
+
+    if "date" in selected.columns:
+        selected["date"] = pd.to_datetime(
+            selected["date"],
+            errors="coerce",
+        )
+
+        if start_date is not None:
+            selected = selected[
+                selected["date"] >= pd.Timestamp(start_date)
+            ]
+
+        if end_date is not None:
+            selected = selected[
+                selected["date"] <= pd.Timestamp(end_date)
+            ]
+
+        selected = selected.sort_values("date")
+
+    return selected
 
 @tool
 def get_series(
@@ -82,49 +144,20 @@ def get_series(
     end_date: str | None = None,
 ) -> list[dict]:
     """
-    Recupera observações já harmonizadas do dataset ativo.
+    Retorna observações de uma série do dataset harmonizado.
 
-    `parameter` deve ser o nome canônico do parâmetro.
+    `parameter` deve ser o nome canônico previamente resolvido.
 
-    Não realiza resolução de parâmetros, limpeza de resultados,
-    extração de qualifiers ou conversão de unidades.
+    Use esta tool quando for necessário inspecionar os valores da série.
+    Para análises e gráficos, prefira as tools específicas, que acessam
+    os dados diretamente no backend.
     """
-    df = SESSION.require_data()
-
-    mask = (
-        df["parameter"]
-        .astype("string")
-        .str.casefold()
-        .eq(str(parameter).casefold())
+    df = select_series(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
     )
-
-    out = df.loc[mask].copy()
-
-    if point is not None and "point" in out.columns:
-        out = out[
-            out["point"]
-            .astype("string")
-            .str.casefold()
-            .eq(str(point).casefold())
-        ]
-
-    if "date" in out.columns:
-        # date já deve estar harmonizada, mas garantimos dtype
-        # temporal para filtro e ordenação.
-        out["date"] = pd.to_datetime(
-            out["date"],
-            errors="coerce",
-        )
-
-        if start_date is not None:
-            start = pd.to_datetime(start_date)
-            out = out[out["date"] >= start]
-
-        if end_date is not None:
-            end = pd.to_datetime(end_date)
-            out = out[out["date"] <= end]
-
-        out = out.sort_values("date")
 
     columns = [
         column
@@ -136,12 +169,11 @@ def get_series(
             "unit",
             "qualifier",
         ]
-        if column in out.columns
+        if column in df.columns
     ]
 
-    result = out[columns].copy()
+    result = df[columns].copy()
 
-    # Datas precisam ser serializáveis para retorno da tool.
     if "date" in result.columns:
         result["date"] = result["date"].apply(
             lambda value: (
@@ -151,9 +183,8 @@ def get_series(
             )
         )
 
-    result = result.astype(object).where(
-        pd.notna(result),
-        None,
+    return (
+        result
+        .where(pd.notna(result), None)
+        .to_dict("records")
     )
-
-    return result.to_dict("records")

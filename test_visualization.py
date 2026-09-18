@@ -96,8 +96,9 @@ maximum = limits[0].get("Max")
 
 path = plot_time_series.invoke(
     {
-        "observations": series,
-        "title": "Oxigênio dissolvido - P01",
+        "parameter": canonical,
+        "point": "PV180",
+        "title": "Oxigênio dissolvido - PV180",
         "minimum": minimum,
         "maximum": maximum,
     }

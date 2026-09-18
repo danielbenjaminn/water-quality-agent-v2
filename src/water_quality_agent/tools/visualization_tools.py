@@ -6,38 +6,58 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from langchain_core.tools import tool
 
+from water_quality_agent.tools.data_tools import select_series
+
 
 @tool
 def plot_time_series(
-    observations: list[dict],
-    title: str,
+    parameter: str,
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    title: str | None = None,
     minimum: float | None = None,
     maximum: float | None = None,
 ) -> str:
     """
-    Plota uma série temporal previamente selecionada e harmonizada.
+    Plota uma série temporal diretamente do dataset harmonizado.
 
-    Os valores de `result` devem ser numéricos e as unidades já devem
-    estar harmonizadas.
+    `parameter` deve ser o nome canônico previamente resolvido.
 
-    Valores censurados são plotados na magnitude reportada, com
-    marcadores distintos para qualifiers "<" e ">".
+    Os dados são recuperados diretamente do backend e não devem ser
+    enviados pelo LLM como lista de observações.
 
     Linhas regulatórias mínima e máxima são adicionadas quando
     fornecidas.
     """
-    if not observations:
-        raise ValueError("Sem observações para plotar.")
 
-    df = pd.DataFrame(observations)
+    df = select_series(
+        parameter=parameter,
+        point=point,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
-    required = {"date", "result"}
+    if df.empty:
+        raise ValueError(
+            f"Sem observações para parameter={parameter!r}"
+            + (
+                f", point={point!r}."
+                if point is not None
+                else "."
+            )
+        )
+
+    required = {
+        "date",
+        "result",
+    }
 
     missing = required - set(df.columns)
 
     if missing:
         raise ValueError(
-            f"Colunas obrigatórias ausentes para série temporal: "
+            "Colunas obrigatórias ausentes para série temporal: "
             f"{sorted(missing)}"
         )
 
@@ -128,10 +148,6 @@ def plot_time_series(
         figsize=(11, 5)
     )
 
-    # Linha da série completa.
-    #
-    # Ela conecta as magnitudes reportadas, inclusive limites de
-    # quantificação/detecção de observações censuradas.
     ax.plot(
         df["date"],
         df["result"],
@@ -194,6 +210,12 @@ def plot_time_series(
     # ---------------------------------------------------------
     # Aparência
     # ---------------------------------------------------------
+
+    if title is None:
+        title = parameter
+
+        if point is not None:
+            title += f" - {point}"
 
     ax.set_title(title)
     ax.set_xlabel("Data")
