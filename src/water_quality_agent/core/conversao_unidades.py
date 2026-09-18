@@ -4,6 +4,118 @@ import pandas as pd
 import numpy as np
 
 
+def padronizar_unidades(s: pd.Series) -> pd.Series:
+    """
+    Padroniza a representação textual das unidades de medida.
+
+    Esta função NÃO converte valores numéricos.
+    Ela apenas normaliza diferentes grafias da mesma unidade.
+
+    Exemplos
+    --------
+    mg/l        -> mg/L
+    mg / L      -> mg/L
+    μg/L        -> µg/L
+    ug/L        -> µg/L
+    µg / l      -> µg/L
+    ºC          -> °C
+    Col/100mL   -> UFC/100mL
+    NOUNIT      -> -
+
+    Parameters
+    ----------
+    s : pd.Series
+        Série contendo as unidades originais.
+
+    Returns
+    -------
+    pd.Series
+        Série com as unidades textualmente padronizadas.
+    """
+
+    subs_unidades = {
+        # -----------------------------------------------------
+        # Símbolo micro
+        # μ (grego) -> µ (micro sign)
+        # -----------------------------------------------------
+        r"μ": "µ",
+
+        # -----------------------------------------------------
+        # Concentração massa / volume
+        # -----------------------------------------------------
+        r"(?i)^mg\s*[./]?\s*l(?:itro)?(?:\^-?1|-1)?$": "mg/L",
+
+        r"(?i)^(?:ug|µg)\s*[./]?\s*l(?:itro)?(?:\^-?1|-1)?$": "µg/L",
+
+        r"(?i)^g\s*[./]?\s*l(?:itro)?(?:\^-?1|-1)?$": "g/L",
+
+        # -----------------------------------------------------
+        # Concentração massa / massa
+        # -----------------------------------------------------
+        r"(?i)^mg\s*[./]?\s*kg(?:\^-?1|-1)?$": "mg/kg",
+
+        r"(?i)^(?:ug|µg)\s*[./]?\s*kg(?:\^-?1|-1)?$": "µg/kg",
+
+        # -----------------------------------------------------
+        # Microbiologia
+        # -----------------------------------------------------
+        r"(?i)^col\s*/\s*100\s*ml$": "UFC/100mL",
+
+        r"(?i)^ufc\s*/\s*100\s*ml$": "UFC/100mL",
+
+        r"(?i)^nmp\s*/\s*100\s*ml$": "NMP/100mL",
+
+        r"(?i)^c[ée]l(?:ulas?)?\.?\s*/\s*ml$": "cel/mL",
+
+        # -----------------------------------------------------
+        # Condutividade
+        # -----------------------------------------------------
+        r"(?i)^(?:us|µs)\s*/\s*cm$": "µS/cm",
+
+        # -----------------------------------------------------
+        # Temperatura
+        # -----------------------------------------------------
+        r"(?i)^[º°]\s*c$": "°C",
+
+        # -----------------------------------------------------
+        # Volume / volume
+        # -----------------------------------------------------
+        r"(?i)^ml\s*/\s*l.*$": "mL/L",
+
+        # -----------------------------------------------------
+        # Sem unidade / presença-ausência
+        # -----------------------------------------------------
+        r"(?i)^nounit$": "-",
+
+        r"(?i)^ausente$": "P/A",
+    }
+
+    # Mantém NA como NA e permite operações .str.
+    result = s.astype("string").str.strip()
+
+    # Remove espaços duplicados.
+    result = result.str.replace(
+        r"\s+",
+        " ",
+        regex=True,
+    )
+
+    # Primeiro unifica o caractere Unicode de micro.
+    result = result.str.replace(
+        "μ",
+        "µ",
+        regex=False,
+    )
+
+    # Aplica as regras de normalização.
+    result = result.replace(
+        to_replace=subs_unidades,
+        regex=True,
+    )
+
+    return result
+
+
 def contar_casas_decimais(valor):
     """Conta o número de casas decimais de um valor numérico."""
     valor_str = f"{valor:.16f}".rstrip('0')

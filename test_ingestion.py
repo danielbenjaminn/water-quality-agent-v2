@@ -16,7 +16,7 @@ llm = ChatGroq(
     temperature=0,
 )
 
-result = ingest_dataset("data/dados.csv", llm=llm,)
+result = ingest_dataset("data/dados_.csv", llm=llm,)
 
 print("\n=== RELATÓRIO ===")
 print(result["report_text"])

@@ -2,9 +2,9 @@ Data;Ponto;Parâmetro;Resultado;Unidade
 01/09/2026;P01;OD;6,2;mg/L
 01/09/2026;P01;Turbidez;12,5;NTU
 01/09/2026;P01;pH;7,1;-
-02/09/2026;P01;Índice Fenóis;<5,0;mg/L
+02/09/2026;P01;Índice Fenóis;<5,0;mg/FL
 02/09/2026;P01;Fósforo T.;0,08;mg/L
-03/09/2026;P01;DBO 5 dias a 20°C;3,8;mg/L O2
+03/09/2026;P01;DBO 5 dias a 20°C;3,8;mgO/L O2
 03/09/2026;P01;Cor verdadeira;42;mg Pt/L
 03/09/2026;P01;Clorofila a;18,4;µg/L
 03/09/2026;P01;Densidade de cianobactérias;18500;cel/mL
@@ -17,7 +17,7 @@ Data;Ponto;Parâmetro;Resultado;Unidade
 04/09/2026;P01;Berílio total;<0,01;mg/L Be
 04/09/2026;P01;Boro total;0,21;mg/L B
 04/09/2026;P01;Cádmio total;<0,0005;mg/L Cd
-04/09/2026;P01;Chumbo total;0,006;mg/L Pb
+04/09/2026;P01;Chumbo total;0,006;mgPb/L Pb
 04/09/2026;P01;Cianeto livre;<0,002;mg/L CN
 04/09/2026;P01;Cloreto total;34,7;mg/L Cl
 04/09/2026;P01;Cloro residual total;<0,005;mg/L Cl
