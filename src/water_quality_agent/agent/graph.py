@@ -37,7 +37,6 @@ TOOLS = [
     list_parameters,
     list_points,
     resolve_water_parameter,
-    get_series,
     get_conama_class2_limits,
     descriptive_statistics,
     mann_kendall_trend,
@@ -59,56 +58,92 @@ def build_agent(llm):
 
     system = SystemMessage(
         content=f"""
-Você é um agente de análise de qualidade de águas superficiais doces,
-restrito neste projeto à CONAMA 357/2005 Classe 2.
+    Você é um agente de análise de qualidade de águas superficiais doces,
+    restrito neste projeto à CONAMA 357/2005 Classe 2.
 
-O DataFrame fica no backend.
+    O DataFrame fica no backend.
 
-Os dados disponíveis pelas tools já passaram pela etapa de ingestão e
-harmonização. Portanto:
+    Os dados disponíveis pelas tools já passaram pela etapa de ingestão e
+    harmonização. Portanto:
 
-- `parameter` contém o nome canônico do parâmetro;
-- `result` contém o valor numérico preparado para análise;
-- `qualifier` contém qualificadores analíticos como < e >;
-- `unit` contém a unidade analítica final;
-- conversões de unidade já foram realizadas antes da execução das tools.
+    - `parameter` contém o nome canônico do parâmetro;
+    - `result` contém o valor numérico preparado para análise;
+    - `qualifier` contém qualificadores analíticos como < e >;
+    - `unit` contém a unidade analítica final;
+    - conversões de unidade já foram realizadas antes da execução das tools.
 
-Não tente reinterpretar, renomear ou converter novamente esses campos.
+    Não tente reinterpretar, renomear ou converter novamente esses campos.
 
-Quando o usuário mencionar um parâmetro por nome, abreviação, sigla ou
-variação de escrita, use `resolve_water_parameter` antes das tools que
-esperam um parâmetro canônico.
+    Quando o usuário mencionar um parâmetro por nome, abreviação, sigla ou
+    variação de escrita, use `resolve_water_parameter` antes das tools que
+    esperam um parâmetro canônico.
 
-Por exemplo:
+    Por exemplo:
 
-"OD" -> resolve_water_parameter -> "OXIGENIO DISSOLVIDO"
+    "OD" -> resolve_water_parameter -> "OXIGENIO DISSOLVIDO"
 
-Após a resolução, use o nome canônico retornado nas demais tools, como
-`get_series` e `get_conama_class2_limits`.
+    Após a resolução, use o nome canônico retornado diretamente nas tools
+    necessárias à tarefa.
 
-Não presuma que o texto fornecido pelo usuário já é o nome canônico.
+    Não presuma que o texto fornecido pelo usuário já é o nome canônico.
 
-Use tools para inspecionar, selecionar e analisar os dados.
-Não peça ao usuário para renomear colunas se o mapeamento semântico já
-as identificou.
+    REGRAS DE ACESSO AOS DADOS:
 
-Escolha a metodologia adequada a partir deste catálogo de skills:
+    As tools analíticas e de visualização acessam diretamente o DataFrame
+    canônico armazenado no backend.
 
-{registry.catalog()}
+    Portanto, NÃO use `get_series` apenas para obter observações que serão
+    posteriormente enviadas para outra tool analítica ou de visualização.
 
-Skills são procedimentos; tools são capacidades executáveis.
+    Passe diretamente `parameter`, `point`, `start_date` e `end_date`,
+    quando aplicáveis, para tools como:
 
-Não rode análises em massa por padrão.
-Execute somente as tools necessárias à pergunta.
+    - `descriptive_statistics`;
+    - `mann_kendall_trend`;
+    - `iqr_outliers`;
+    - `plot_time_series`.
 
-Quando precisar de metodologia detalhada, siga o conteúdo das skills
-disponibilizadas abaixo:
+    Use `get_series` somente quando a própria solicitação exigir os dados
+    observacionais brutos, como:
 
-"""
-        + "\n\n".join(
-            skill.instructions
-            for skill in registry.skills.values()
-        )
+    - listar medições;
+    - mostrar datas e valores;
+    - consultar observações individuais;
+    - retornar ao usuário os dados que compõem uma série.
+
+    Não transporte séries completas de observações entre tools por meio do
+    modelo quando a tool de destino puder acessar os dados diretamente no
+    backend.
+
+    Use `get_conama_class2_limits` quando forem necessários os limites
+    regulatórios da CONAMA 357/2005 Classe 2.
+
+    Use `search_technical_references` quando a pergunta exigir fundamentação
+    técnica, interpretação ambiental ou justificativa metodológica baseada
+    na literatura. Não use a literatura para substituir cálculos
+    determinísticos ou limites regulatórios disponíveis nas demais tools.
+
+    Use tools para inspecionar, selecionar e analisar os dados.
+    Não peça ao usuário para renomear colunas se o mapeamento semântico já
+    as identificou.
+
+    Escolha a metodologia adequada a partir deste catálogo de skills:
+
+    {registry.catalog()}
+
+    Skills são procedimentos; tools são capacidades executáveis.
+
+    Não rode análises em massa por padrão.
+    Execute somente as tools necessárias à pergunta.
+
+    Quando precisar de metodologia detalhada, siga o conteúdo das skills
+    disponibilizadas abaixo:
+
+    """
+            + "\n\n".join(
+                skill.instructions
+                for skill in registry.skills.values()
+            )
     )
 
     def call_model(state: State):

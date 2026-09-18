@@ -277,8 +277,11 @@ def invoke_structured(
     native_error: Exception | None = None
 
     # --------------------------------------------------------
-    # 1. Structured output nativo
+    # 1. Structured output nativo — JSON Schema
     # --------------------------------------------------------
+
+    native_error = None
+    function_calling_error = None
 
     try:
         structured_llm = llm.with_structured_output(
@@ -296,8 +299,30 @@ def invoke_structured(
     except Exception as exc:
         native_error = exc
 
+
     # --------------------------------------------------------
-    # 2. Fallback JSON textual
+    # 2. Structured output — Function Calling
+    # --------------------------------------------------------
+
+    try:
+        structured_llm = llm.with_structured_output(
+            schema,
+            method="function_calling",
+        )
+
+        result = structured_llm.invoke(prompt)
+
+        if isinstance(result, schema):
+            return result
+
+        return schema.model_validate(result)
+
+    except Exception as exc:
+        function_calling_error = exc
+
+
+    # --------------------------------------------------------
+    # 3. Fallback JSON textual
     # --------------------------------------------------------
 
     result, raw_content, fallback_error = _invoke_textual_json(
@@ -309,8 +334,9 @@ def invoke_structured(
     if result is not None:
         return result
 
+
     # --------------------------------------------------------
-    # 3. Uma tentativa de reparo
+    # 4. Uma tentativa de reparo
     # --------------------------------------------------------
 
     try:
@@ -325,7 +351,8 @@ def invoke_structured(
 
         raise ValueError(
             "Falha ao obter structured output válido.\n"
-            f"Erro do structured output nativo: {native_error}\n"
+            f"Erro do JSON Schema: {native_error}\n"
+            f"Erro do Function Calling: {function_calling_error}\n"
             f"Erro do fallback textual: {fallback_error}\n"
             f"Erro do reparo: {repair_error}"
         ) from repair_error
