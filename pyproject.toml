@@ -2,17 +2,47 @@
 requires = ["setuptools>=75", "wheel"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "water-quality-agent"
 version = "0.2.0"
+description = "Agente para análise de séries históricas de qualidade da água com LangGraph, ferramentas determinísticas, CONAMA 357/2005 e RAG."
+readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
-  "pandas>=2.2", "numpy>=2.0", "scipy>=1.14", "matplotlib>=3.9",
-  "pydantic>=2.9", "unidecode>=1.3", "fuzzywuzzy>=0.18", "python-Levenshtein>=0.26",
-  "langchain>=1.0", "langgraph>=1.0", "langchain-community>=0.3",
-  "langchain-text-splitters>=0.3", "langchain-chroma>=0.2", "pypdf>=5.0",
-  "langchain-groq>=0.3", "langchain-openai>=0.3"
+    # Dados e computação científica
+    "pandas>=2.2",
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+
+    # Validação e normalização
+    "pydantic>=2.9",
+    "unidecode>=1.3",
+    "fuzzywuzzy>=0.18",
+    "python-Levenshtein>=0.26",
+    "python-dotenv>=1.0",
+
+    # Agente
+    "langchain>=1.0",
+    "langgraph>=1.0",
+    "langchain-community>=0.3",
+    "langchain-text-splitters>=0.3",
+
+    # Providers LLM
+    "langchain-openai>=0.3",
+    "langchain-groq>=0.3",
+
+    # RAG
+    "langchain-chroma>=0.2",
+    "sentence-transformers>=3.0",
+    "pypdf>=5.0",
+
+    # Interface
+    "streamlit>=1.40",
 ]
+
 
 [tool.setuptools.packages.find]
 where = ["src"]
