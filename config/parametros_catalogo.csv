@@ -1,4 +1,4 @@
-﻿Parâmetro;Parâmetro B.D.;Unidade
+Parâmetro;Parâmetro B.D.;Unidade
 Alcalinidade de bicarbonato;ALCALINIDADE DE BICARBONATO;mg/L
 Alcalinidade total;ALCALINIDADE TOTAL;mg/L
 Alumínio total;ALUMINIO TOTAL;mg/L
@@ -44,3 +44,9 @@ Sólidos totais;SOLIDOS TOTAIS;mg/L
 Temperatura da água;TEMPERATURA DA AGUA;°C
 Temperatura do ar;TEMPERATURA DO AR;°C
 Transparência;TRANSPARENCIA;cm
+Índice Fenóis;FENOIS TOTAIS;mg/L
+Fósforo T.;FOSFORO TOTAL (AMBIENTE LOTICO);mg/L
+Fósforo Total;FOSFORO TOTAL (AMBIENTE LOTICO);mg/L
+Tricloroeteno;1,1,2-TRICLOROETENO;mg/L
+Coliformes termotolerantes;COLIFORMES TERMOTOLERANTES (QUANTI);NMP/100mL
+Criseno;CRISENO;μg/L
