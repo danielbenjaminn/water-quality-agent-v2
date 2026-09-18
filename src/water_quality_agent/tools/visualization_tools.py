@@ -170,7 +170,9 @@ def plot_time_series(
     if minimum is not None:
         ax.axhline(
             minimum,
+            color="orange",
             linestyle="--",
+            linewidth=1.5,
             label=(
                 f"Mínimo CONAMA: {minimum}"
                 + (f" {unit}" if unit else "")
@@ -180,7 +182,9 @@ def plot_time_series(
     if maximum is not None:
         ax.axhline(
             maximum,
+            color="red",
             linestyle="--",
+            linewidth=1.5,
             label=(
                 f"Máximo CONAMA: {maximum}"
                 + (f" {unit}" if unit else "")

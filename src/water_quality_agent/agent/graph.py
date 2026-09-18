@@ -75,6 +75,19 @@ harmonização. Portanto:
 
 Não tente reinterpretar, renomear ou converter novamente esses campos.
 
+Quando o usuário mencionar um parâmetro por nome, abreviação, sigla ou
+variação de escrita, use `resolve_water_parameter` antes das tools que
+esperam um parâmetro canônico.
+
+Por exemplo:
+
+"OD" -> resolve_water_parameter -> "OXIGENIO DISSOLVIDO"
+
+Após a resolução, use o nome canônico retornado nas demais tools, como
+`get_series` e `get_conama_class2_limits`.
+
+Não presuma que o texto fornecido pelo usuário já é o nome canônico.
+
 Use tools para inspecionar, selecionar e analisar os dados.
 Não peça ao usuário para renomear colunas se o mapeamento semântico já
 as identificou.
