@@ -5,21 +5,40 @@ from water_quality_agent.core.descriptive import descriptive_analysis
 from water_quality_agent.core.trend import mann_kendall_analysis
 from water_quality_agent.core.correlation import correlation_analysis
 from water_quality_agent.core.outliers import flag_iqr_outliers
-from water_quality_agent.core.extracao_qualifier import extrair_qualif
 
 
-def _records_df(observations: list[dict]) -> pd.DataFrame:
+def _records_df(
+    observations: list[dict],
+) -> pd.DataFrame:
+    """
+    Adapta o schema canônico atual para os módulos estatísticos
+    legados.
+
+    Não executa limpeza, resolução de parâmetro, extração de
+    qualifier ou conversão de unidade.
+    """
+
     df = pd.DataFrame(observations)
-    rename = {"parameter":"Parâmetro B.D.", "result":"Resultado", "point":"Ponto", "date":"Data", "qualifier":"Qualifier", "unit":"Unidade"}
-    df = df.rename(columns=rename)
-    if "Resultado" in df.columns:
-        parsed = [extrair_qualif(str(v).replace(",", "."), i) for i, v in df["Resultado"].items()]
-        if "Qualifier" not in df.columns:
-            df["Qualifier"] = [x[0] for x in parsed]
-        else:
-            extracted = pd.Series([x[0] for x in parsed], index=df.index)
-            df["Qualifier"] = df["Qualifier"].where(df["Qualifier"].notna() & df["Qualifier"].astype(str).str.strip().ne(""), extracted)
-        df["Resultado Num"] = [x[1] for x in parsed]
+
+    rename = {
+        "parameter": "Parâmetro B.D.",
+        "result": "Resultado Num",
+        "point": "Ponto",
+        "date": "Data",
+        "qualifier": "Qualifier",
+        "unit": "Unidade",
+    }
+
+    df = df.rename(
+        columns=rename
+    )
+
+    if "Resultado Num" in df.columns:
+        df["Resultado Num"] = pd.to_numeric(
+            df["Resultado Num"],
+            errors="coerce",
+        )
+
     return df
 
 @tool
