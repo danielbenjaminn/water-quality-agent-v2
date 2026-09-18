@@ -331,3 +331,78 @@ print(
     "Total após padronização:",
     resultado["Padronizada"].nunique()
 )
+
+print("\n" + "=" * 70)
+print("11. HARMONIZAÇÃO DO DATASET")
+print("=" * 70)
+
+df = SESSION.require_data()
+
+print("Shape:", df.shape)
+
+print("\nColunas:")
+print(df.columns.tolist())
+
+cols = [
+    "parameter_original",
+    "parameter",
+    "result_original",
+    "result",
+    "unit_original",
+    "unit",
+    "target_unit",
+    "unit_source",
+]
+
+cols = [c for c in cols if c in df.columns]
+
+print("\nAmostra harmonizada:")
+print(
+    df[cols]
+    .drop_duplicates()
+    .head(30)
+    .to_string(index=False)
+)
+
+print("\nFontes das unidades canônicas:")
+print(
+    df["unit_source"]
+    .value_counts(dropna=False)
+)
+
+print("\nUnidades ainda diferentes da unidade alvo:")
+
+different = df[
+    df["target_unit"].notna()
+    & df["unit"].notna()
+    & (
+        df["unit"].astype(str)
+        != df["target_unit"].astype(str)
+    )
+]
+
+print(
+    different[
+        [
+            "parameter",
+            "unit_original",
+            "unit",
+            "target_unit",
+            "unit_source",
+        ]
+    ]
+    .drop_duplicates()
+    .to_string(index=False)
+)
+
+print("\nParâmetros sem unidade alvo:")
+
+unresolved_units = (
+    df.loc[
+        df["target_unit"].isna(),
+        ["parameter_original", "parameter", "unit"],
+    ]
+    .drop_duplicates()
+)
+
+print(unresolved_units.to_string(index=False))

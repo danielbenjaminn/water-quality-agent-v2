@@ -5,6 +5,7 @@ from water_quality_agent.core.csv_loader import carregar_csv
 from water_quality_agent.core.session import SESSION
 from .profiler import profile_dataframe
 from .semantic_mapper import semantic_mapping
+from water_quality_agent.core.harmonization import harmonize_dataset
 from .validator import format_ingestion_report, validate_and_canonicalize
 
 
@@ -28,7 +29,10 @@ def ingest_dataset(path: str | Path, llm=None) -> dict:
     }
 
     if report.valid:
+        canonical = harmonize_dataset(canonical)
+
         SESSION.canonical = canonical
+
         fields = set(canonical.columns)
         SESSION.capabilities = {
             "descriptive": True,

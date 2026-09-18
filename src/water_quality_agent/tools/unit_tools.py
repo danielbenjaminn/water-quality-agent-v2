@@ -2,10 +2,26 @@ from __future__ import annotations
 from langchain_core.tools import tool
 
 FACTORS = {
-    ("ug/l", "mg/l"): 1e-3, ("µg/l", "mg/l"): 1e-3,
-    ("mg/l", "ug/l"): 1e3, ("mg/l", "µg/l"): 1e3,
-    ("mg/l", "mg/l"): 1.0, ("ug/l", "ug/l"): 1.0, ("µg/l", "µg/l"): 1.0,
-    ("g/l", "mg/l"): 1e3, ("mg/l", "g/l"): 1e-3,
+    ("ug/l", "mg/l"): 1e-3,
+    ("µg/l", "mg/l"): 1e-3,
+
+    ("mg/l", "ug/l"): 1e3,
+    ("mg/l", "µg/l"): 1e3,
+
+    ("g/l", "mg/l"): 1e3,
+    ("mg/l", "g/l"): 1e-3,
+
+    ("mg/l", "mg/l"): 1.0,
+    ("ug/l", "ug/l"): 1.0,
+    ("µg/l", "µg/l"): 1.0,
+    ("g/l", "g/l"): 1.0,
+
+    ("ntu", "ntu"): 1.0,
+    ("unt", "unt"): 1.0,
+    ("°c", "°c"): 1.0,
+    ("µs/cm", "µs/cm"): 1.0,
+    ("nmp/100ml", "nmp/100ml"): 1.0,
+    ("-", "-"): 1.0,
 }
 
 def _u(x: str) -> str: return str(x).strip().lower().replace("μ", "µ")

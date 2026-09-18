@@ -31,15 +31,21 @@ def resolve_water_parameter(name: str) -> dict:
 def get_series(parameter: str, point: str | None = None, start_date: str | None = None, end_date: str | None = None) -> list[dict]:
     """Recupera observações do dataset ativo para um parâmetro/ponto/período. Não calcula estatísticas."""
     df = SESSION.require_data().copy()
-    # Aceita nome original ou canônico resolvido.
-    mask = df["parameter"].astype(str).str.casefold().eq(str(parameter).casefold())
-    if not mask.any():
-        resolved = resolve_parameter(parameter).get("canonical")
-        if resolved:
-            # resolve cada nome presente uma vez, evitando enviar dados ao LLM
-            names = df["parameter"].dropna().astype(str).unique()
-            accepted = [n for n in names if resolve_parameter(n).get("canonical") == resolved]
-            mask = df["parameter"].isin(accepted)
+
+    resolved = resolve_parameter(parameter)
+
+    canonical = (
+        resolved.get("canonical")
+        or parameter
+    )
+
+    mask = (
+        df["parameter"]
+        .astype(str)
+        .str.casefold()
+        .eq(str(canonical).casefold())
+    )
+
     out = df.loc[mask].copy()
     if point is not None and "point" in out:
         out = out[out["point"].astype(str).str.casefold().eq(str(point).casefold())]
