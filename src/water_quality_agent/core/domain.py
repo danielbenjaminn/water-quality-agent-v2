@@ -42,6 +42,21 @@ def parameter_catalog() -> tuple[pd.DataFrame, dict[str, str]]:
     Fontes:
     1. limites_legais.csv
     2. parametros_catalogo.csv
+
+    O dicionário retornado possui a estrutura:
+
+        nome_normalizado -> nome_canônico
+
+    Exemplos:
+
+        "CHUMBO TOTAL"
+            -> "CHUMBO TOTAL"
+
+        "INDICE FENOIS"
+            -> "FENOIS TOTAIS"
+
+    A legislação tem prioridade sobre o catálogo complementar
+    para nomes canônicos já conhecidos.
     """
 
     limits = load_legal_limits()
@@ -49,34 +64,96 @@ def parameter_catalog() -> tuple[pd.DataFrame, dict[str, str]]:
 
     known: dict[str, str] = {}
 
-    # ---------------------------------------------------------
-    # Legislação
-    # ---------------------------------------------------------
+    # =========================================================
+    # 1. LEGISLAÇÃO
+    # =========================================================
 
     if "Parâmetro B.D." in limits.columns:
+
         for value in (
             limits["Parâmetro B.D."]
             .dropna()
             .astype(str)
             .unique()
         ):
-            known[trat_string(value)] = value
+            canonical = value.strip()
 
-    # ---------------------------------------------------------
-    # Catálogo complementar
-    # ---------------------------------------------------------
+            if not canonical:
+                continue
 
-    if "Parâmetro B.D." in catalog.columns:
-        for value in (
-            catalog["Parâmetro B.D."]
-            .dropna()
-            .astype(str)
-            .unique()
-        ):
-            key = trat_string(value)
+            known[
+                trat_string(canonical)
+            ] = canonical
 
-            # legislação tem prioridade
-            known.setdefault(key, value)
+    # =========================================================
+    # 2. CATÁLOGO COMPLEMENTAR
+    # =========================================================
+    #
+    # Estrutura esperada:
+    #
+    # Parâmetro | Parâmetro B.D. | Unidade
+    #
+    # "Índice Fenóis" | "FENOIS TOTAIS" | "mg/L"
+    #
+    # Aqui cadastramos DUAS entradas:
+    #
+    # FENOIS TOTAIS -> FENOIS TOTAIS
+    # INDICE FENOIS -> FENOIS TOTAIS
+    #
+    # Dessa forma, decisões do HITL persistidas no catálogo
+    # passam a ser resolvidas deterministicamente nas próximas
+    # execuções.
+    # =========================================================
+
+    if (
+        not catalog.empty
+        and "Parâmetro B.D." in catalog.columns
+    ):
+
+        for _, row in catalog.iterrows():
+
+            canonical = row.get("Parâmetro B.D.")
+
+            if pd.isna(canonical):
+                continue
+
+            canonical = str(canonical).strip()
+
+            if not canonical:
+                continue
+
+            # -------------------------------------------------
+            # Nome canônico
+            # -------------------------------------------------
+
+            canonical_key = trat_string(canonical)
+
+            # setdefault porque a legislação, carregada acima,
+            # tem prioridade.
+            known.setdefault(
+                canonical_key,
+                canonical,
+            )
+
+            # -------------------------------------------------
+            # Alias / nome encontrado originalmente
+            # -------------------------------------------------
+
+            if "Parâmetro" in catalog.columns:
+
+                alias = row.get("Parâmetro")
+
+                if pd.notna(alias):
+
+                    alias = str(alias).strip()
+
+                    if alias:
+
+                        alias_key = trat_string(alias)
+
+                        known[
+                            alias_key
+                        ] = canonical
 
     return catalog, known
 

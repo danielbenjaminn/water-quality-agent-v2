@@ -11,49 +11,137 @@ from .validator import format_ingestion_report, validate_and_canonicalize
 
 def ingest_dataset(path: str | Path, llm=None) -> dict:
     loaded = carregar_csv(path)
-    raw = loaded.dataframe.copy()
-    semantic = semantic_mapping(raw, llm=llm)
-    canonical, report = validate_and_canonicalize(raw, semantic)
 
-    # Sempre registramos metadados da tentativa, mas dados analíticos só ficam ativos se válidos.
+    raw = loaded.dataframe.copy()
+
+    semantic = semantic_mapping(
+        raw,
+        llm=llm,
+    )
+
+    canonical, report = validate_and_canonicalize(
+        raw,
+        semantic,
+    )
+
+    # =========================================================
+    # PENDÊNCIAS DE RESOLUÇÃO
+    # =========================================================
+    #
+    # Sempre existe, mesmo se a ingestão for inválida.
+    #
+    # Isso evita UnboundLocalError e mantém uma estrutura
+    # consistente no metadata.
+    # =========================================================
+
+    pending_parameters = []
+
+    # =========================================================
+    # SESSION - DADOS BRUTOS
+    # =========================================================
+
     SESSION.source = Path(path)
     SESSION.raw = raw
-    SESSION.schema_map = {k: v for k, v in semantic.mapping.items() if v}
-    SESSION.metadata = {
-        "encoding": loaded.encoding,
-        "separator": loaded.separador,
-        "schema_notes": semantic.notes,
-        "ingestion_valid": report.valid,
-        "point_inferred": report.point_inferred,
-        "ingestion_report": report.model_dump(),
+
+    SESSION.schema_map = {
+        k: v
+        for k, v in semantic.mapping.items()
+        if v
     }
 
+    # =========================================================
+    # DATASET VÁLIDO
+    # =========================================================
+
     if report.valid:
-        canonical = harmonize_dataset(canonical)
+
+        canonical, pending_parameters = harmonize_dataset(
+            canonical,
+            llm=llm,
+        )
 
         SESSION.canonical = canonical
 
         fields = set(canonical.columns)
+
         SESSION.capabilities = {
             "descriptive": True,
             "time_series": True,
             "regulatory": True,
             "trend": True,
-            "compare_points": bool(semantic.mapping.get("point")),
-            "campaign_comparison": "campaign" in fields,
-            "basin_context": "basin" in fields,
-            "sub_basin_context": "sub_basin" in fields,
+
+            "compare_points": bool(
+                semantic.mapping.get("point")
+            ),
+
+            "campaign_comparison": (
+                "campaign" in fields
+            ),
+
+            "basin_context": (
+                "basin" in fields
+            ),
+
+            "sub_basin_context": (
+                "sub_basin" in fields
+            ),
         }
+
+    # =========================================================
+    # DATASET INVÁLIDO
+    # =========================================================
+
     else:
+
         SESSION.canonical = None
         SESSION.capabilities = {}
 
+    # =========================================================
+    # METADATA
+    # =========================================================
+    #
+    # Só montamos DEPOIS da harmonização, pois agora
+    # pending_parameters já existe.
+    # =========================================================
+
+    SESSION.metadata = {
+        "encoding": loaded.encoding,
+        "separator": loaded.separador,
+
+        "schema_notes": semantic.notes,
+
+        "ingestion_valid": report.valid,
+
+        "point_inferred": report.point_inferred,
+
+        "ingestion_report": (
+            report.model_dump()
+        ),
+
+        "pending_parameters": [
+            item.model_dump()
+            for item in pending_parameters
+        ],
+    }
+
+    # =========================================================
+    # RESULTADO
+    # =========================================================
+
     return {
         "valid": report.valid,
+
         "profile": profile_dataframe(raw),
+
         "mapping": semantic.model_dump(),
+
         "report": report.model_dump(),
-        "report_text": format_ingestion_report(report),
+
+        "report_text": format_ingestion_report(
+            report
+        ),
+
         "capabilities": SESSION.capabilities,
+
         "metadata": SESSION.metadata,
     }

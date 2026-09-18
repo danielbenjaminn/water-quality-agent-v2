@@ -5,8 +5,14 @@ import pandas as pd
 from .conversao_unidades import padronizar_unidades
 from .domain import resolve_parameter, canonical_unit_for
 
+from .parameter_resolution import (
+    resolve_dataset_parameters,
+)
 
-def harmonize_dataset(df: pd.DataFrame) -> pd.DataFrame:
+def harmonize_dataset(
+    df: pd.DataFrame,
+    llm=None,
+) -> tuple[pd.DataFrame, list]:
     """
     Harmoniza deterministicamente o dataset após a ingestão.
 
@@ -39,30 +45,19 @@ def harmonize_dataset(df: pd.DataFrame) -> pd.DataFrame:
 
     # =========================================================
     # RESOLUÇÃO DOS PARÂMETROS
-    #
-    # Resolve cada nome único apenas uma vez.
     # =========================================================
 
-    parameter_map = {}
-
-    unique_parameters = (
-        out["parameter"]
-        .dropna()
-        .astype(str)
-        .unique()
+    resolutions, pending = resolve_dataset_parameters(
+        out,
+        llm=llm,
     )
 
-    for raw_parameter in unique_parameters:
-        resolved = resolve_parameter(raw_parameter)
-
-        canonical = resolved.get("canonical")
-
-        if canonical:
-            parameter_map[raw_parameter] = canonical
-        else:
-            # Ainda não temos HITL.
-            # Portanto preservamos o nome recebido.
-            parameter_map[raw_parameter] = raw_parameter
+    parameter_map = {
+        original: resolution.canonical
+        for original, resolution in resolutions.items()
+        if resolution.status == "resolved"
+        and resolution.canonical is not None
+    }
 
     out["parameter"] = (
         out["parameter"]
@@ -108,4 +103,4 @@ def harmonize_dataset(df: pd.DataFrame) -> pd.DataFrame:
         .map(unit_source_map)
     )
 
-    return out
+    return out, pending

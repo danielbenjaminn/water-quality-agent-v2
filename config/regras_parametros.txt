@@ -60,4 +60,6 @@
 ('4 nitroanilina', 'P-NITROANILINA'),
 (r'.*pah.*', 'HIDROCARBONETOS POLICICLICOS AROMATICOS (PAH)'),
 (r'.*bifenilas policloradas', 'PCBS'),
-('.*diclorometano.*', 'DICLOROMETANO')
+('.*diclorometano.*', 'DICLOROMETANO'),
+('^nitrogenio total$', 'NITROGENIO TOTAL'),
+('.*nitrogenio amoniacal.*', 'NITROGENIO AMONIACAL TOTAL')

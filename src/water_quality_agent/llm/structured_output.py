@@ -12,30 +12,73 @@ T = TypeVar("T", bound=BaseModel)
 
 def _extract_json(text: str) -> dict:
     """
-    Extrai um objeto JSON mesmo quando o modelo retorna
-    ```json ... ```
-    ou texto adicional.
+    Extrai o primeiro objeto JSON válido encontrado no texto.
+
+    Tolera:
+    - texto antes/depois do JSON;
+    - markdown ```json ... ```;
+    - conteúdo adicional após o primeiro objeto JSON.
     """
 
     text = text.strip()
 
-    # Remove markdown fences.
-    text = re.sub(r"^```(?:json)?\s*", "", text)
-    text = re.sub(r"\s*```$", "", text)
+    # ---------------------------------------------------------
+    # Remove fence Markdown, quando houver
+    # ---------------------------------------------------------
+
+    if text.startswith("```"):
+        lines = text.splitlines()
+
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+
+        text = "\n".join(lines).strip()
+
+    # ---------------------------------------------------------
+    # Primeiro tenta interpretar a resposta inteira
+    # ---------------------------------------------------------
 
     try:
-        return json.loads(text)
+        parsed = json.loads(text)
+
+        if isinstance(parsed, dict):
+            return parsed
+
     except json.JSONDecodeError:
         pass
 
-    # Fallback: procura primeiro objeto JSON completo aparente.
-    start = text.find("{")
-    end = text.rfind("}")
+    # ---------------------------------------------------------
+    # Procura o primeiro objeto JSON válido
+    #
+    # raw_decode lê somente UM objeto JSON e ignora o que
+    # vier depois dele.
+    # ---------------------------------------------------------
 
-    if start == -1 or end == -1 or end <= start:
-        raise ValueError("O LLM não retornou um objeto JSON válido.")
+    decoder = json.JSONDecoder()
 
-    return json.loads(text[start:end + 1])
+    for index, char in enumerate(text):
+
+        if char != "{":
+            continue
+
+        try:
+            parsed, _ = decoder.raw_decode(
+                text[index:]
+            )
+
+            if isinstance(parsed, dict):
+                return parsed
+
+        except json.JSONDecodeError:
+            continue
+
+    raise ValueError(
+        "Não foi possível extrair um objeto JSON válido "
+        "da resposta da LLM."
+    )
 
 
 def invoke_structured(
