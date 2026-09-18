@@ -1,5 +1,5 @@
 ---
-name: descriptive_analysis
+name: descriptive-analysis
 description: Caracteriza estatisticamente um subconjunto escolhido pelo usuário, preservando informação de censura e limitações.
 ---
 # Estatística descritiva

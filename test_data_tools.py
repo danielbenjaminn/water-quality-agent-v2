@@ -82,3 +82,68 @@ print("OK - resolução da intenção do usuário")
 print("OK - get_series consulta o dataset harmonizado")
 print("OK - result permanece numérico")
 print("OK - get_series não reconverte unidades")
+
+from water_quality_agent.tools.analysis_tools import (
+    descriptive_statistics,
+)
+
+
+print("\nESTATÍSTICA DESCRITIVA")
+
+stats = descriptive_statistics.invoke(
+    {
+        "observations": series,
+    }
+)
+
+print(stats)
+
+assert isinstance(stats, list)
+
+print("\nOK - get_series -> descriptive_statistics")
+
+print("\nTESTE COM DADOS CENSURADOS")
+
+resolved_censored = resolve_water_parameter.invoke(
+    {"name": "Índice Fenóis"}
+)
+
+print("Parâmetro resolvido:")
+print(resolved_censored)
+
+canonical_censored = resolved_censored.get("canonical")
+
+assert canonical_censored is not None
+
+
+series_censored = get_series.invoke(
+    {
+        "parameter": canonical_censored,
+    }
+)
+
+print("\nSérie censurada:")
+print(series_censored)
+
+assert len(series_censored) > 0
+
+
+stats_censored = descriptive_statistics.invoke(
+    {
+        "observations": series_censored,
+    }
+)
+
+print("\nEstatística censurada:")
+print(stats_censored)
+
+
+assert isinstance(stats_censored, list)
+assert len(stats_censored) > 0
+
+assert stats_censored[0]["n_censored"] > 0
+assert stats_censored[0]["n_left_censored"] > 0
+
+print("\nOK - qualifier chegou ao módulo estatístico")
+print("OK - censura à esquerda reconhecida")
+print("OK - pipeline harmonizado preserva informação censurada")

@@ -1,5 +1,5 @@
 ---
-name: trend_analysis
+name: trend-analysis
 description: Investiga tendência temporal de uma série selecionada usando ferramentas determinísticas e referência metodológica quando necessário.
 ---
 # Tendência

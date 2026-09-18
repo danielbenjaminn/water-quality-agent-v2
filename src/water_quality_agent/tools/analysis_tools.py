@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import pandas as pd
 from langchain_core.tools import tool
+
 from water_quality_agent.core.descriptive import descriptive_analysis
 from water_quality_agent.core.trend import mann_kendall_analysis
 from water_quality_agent.core.correlation import correlation_analysis
@@ -11,13 +13,12 @@ def _records_df(
     observations: list[dict],
 ) -> pd.DataFrame:
     """
-    Adapta o schema canônico atual para os módulos estatísticos
-    legados.
+    Adapta observações do schema canônico para o schema esperado
+    pelos módulos estatísticos legados.
 
-    Não executa limpeza, resolução de parâmetro, extração de
-    qualifier ou conversão de unidade.
+    Não executa limpeza, resolução de parâmetros, extração de
+    qualifiers ou conversão de unidades.
     """
-
     df = pd.DataFrame(observations)
 
     rename = {
@@ -29,9 +30,7 @@ def _records_df(
         "unit": "Unidade",
     }
 
-    df = df.rename(
-        columns=rename
-    )
+    df = df.rename(columns=rename)
 
     if "Resultado Num" in df.columns:
         df["Resultado Num"] = pd.to_numeric(
@@ -41,28 +40,83 @@ def _records_df(
 
     return df
 
+
 @tool
-def descriptive_statistics(observations: list[dict]) -> list[dict]:
-    """Calcula estatísticas descritivas/censura somente sobre as observações fornecidas pelo agente."""
-    if not observations: return []
+def descriptive_statistics(
+    observations: list[dict],
+) -> list[dict]:
+    """
+    Calcula estatísticas descritivas sobre as observações fornecidas.
+
+    Os dados devem ter sido previamente harmonizados.
+    """
+    if not observations:
+        return []
+
     df = _records_df(observations)
-    return descriptive_analysis(df=df, parameter_col="Parâmetro B.D.", value_col="Resultado Num", point_col="Ponto" if "Ponto" in df else None)
+
+    return descriptive_analysis(
+        df=df,
+        parameter_col="Parâmetro B.D.",
+        value_col="Resultado Num",
+        point_col="Ponto" if "Ponto" in df.columns else None,
+    )
+
 
 @tool
-def mann_kendall_trend(observations: list[dict]) -> list[dict]:
-    """Executa análise de tendência Mann-Kendall somente na série selecionada pelo agente."""
-    if not observations: return []
-    return mann_kendall_analysis(_records_df(observations), parameter_col="Parâmetro B.D.", value_col="Resultado Num")
+def mann_kendall_trend(
+    observations: list[dict],
+) -> list[dict]:
+    """
+    Executa análise de tendência Mann-Kendall sobre a série
+    fornecida.
+    """
+    if not observations:
+        return []
+
+    df = _records_df(observations)
+
+    return mann_kendall_analysis(
+        df,
+        parameter_col="Parâmetro B.D.",
+        value_col="Resultado Num",
+    )
+
 
 @tool
-def kendall_correlations(observations: list[dict]) -> list[dict]:
-    """Calcula correlações Kendall sobre o subconjunto selecionado pelo agente."""
-    if not observations: return []
-    return correlation_analysis(_records_df(observations))
+def kendall_correlations(
+    observations: list[dict],
+) -> list[dict]:
+    """
+    Calcula correlações de Kendall sobre o subconjunto fornecido.
+    """
+    if not observations:
+        return []
+
+    df = _records_df(observations)
+
+    return correlation_analysis(df)
+
 
 @tool
-def iqr_outliers(observations: list[dict]) -> list[dict]:
-    """Marca outliers IQR no subconjunto fornecido; não remove observações."""
-    if not observations: return []
-    df = flag_iqr_outliers(_records_df(observations))
-    return df.where(pd.notna(df), None).to_dict("records")
+def iqr_outliers(
+    observations: list[dict],
+) -> list[dict]:
+    """
+    Identifica observações pelo critério IQR.
+
+    As observações são marcadas, não removidas.
+    """
+    if not observations:
+        return []
+
+    df = _records_df(observations)
+
+    result = flag_iqr_outliers(df)
+
+    return (
+        result
+        .astype(object)
+        .where(pd.notna(result), None)
+        .to_dict("records")
+    )
