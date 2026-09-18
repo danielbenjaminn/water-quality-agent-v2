@@ -161,24 +161,49 @@ def iqr_outliers(
 
 @tool
 def kendall_correlations(
-    observations: list[dict],
+    parameters: list[str],
+    point: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ) -> list[dict]:
     """
-    Calcula correlações de Kendall sobre o subconjunto fornecido.
+    Calcula correlações de Kendall entre parâmetros no dataset canônico.
 
-    ATENÇÃO:
-    Esta tool ainda mantém temporariamente o contrato antigo.
-    Será refatorada separadamente porque correlação envolve
-    múltiplos parâmetros.
+    `parameters` deve conter pelo menos dois nomes canônicos previamente
+    resolvidos.
+
+    A análise é realizada diretamente sobre o dataset no backend.
+    Observações censuradas são excluídas pelo core estatístico.
     """
 
-    if not observations:
+    if len(parameters) < 2:
+        raise ValueError(
+            "A correlação de Kendall requer pelo menos dois parâmetros."
+        )
+
+    frames = []
+
+    for parameter in parameters:
+        df = select_series(
+            parameter=parameter,
+            point=point,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        if not df.empty:
+            frames.append(df)
+
+    if not frames:
         return []
 
-    df = pd.DataFrame(observations)
+    df = pd.concat(
+        frames,
+        ignore_index=True,
+    )
 
     rename = {
-        "parameter": "Parâmetro B.D.",
+        "parameter": "Parâmetro",
         "result": "Resultado Num",
         "point": "Ponto",
         "date": "Data",
@@ -187,11 +212,5 @@ def kendall_correlations(
     }
 
     df = df.rename(columns=rename)
-
-    if "Resultado Num" in df.columns:
-        df["Resultado Num"] = pd.to_numeric(
-            df["Resultado Num"],
-            errors="coerce",
-        )
 
     return correlation_analysis(df)

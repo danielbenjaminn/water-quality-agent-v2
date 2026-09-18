@@ -17,6 +17,7 @@ from water_quality_agent.tools.data_tools import (
 )
 from water_quality_agent.tools.regulatory_tools import (
     get_conama_class2_limits,
+    regulatory_compliance,
 )
 from water_quality_agent.tools.analysis_tools import (
     descriptive_statistics,
@@ -38,6 +39,7 @@ TOOLS = [
     list_points,
     resolve_water_parameter,
     get_conama_class2_limits,
+    regulatory_compliance,
     descriptive_statistics,
     mann_kendall_trend,
     kendall_correlations,
@@ -45,7 +47,6 @@ TOOLS = [
     plot_time_series,
     search_technical_references,
 ]
-
 
 class State(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -117,6 +118,13 @@ def build_agent(llm):
 
     Use `get_conama_class2_limits` quando forem necessários os limites
     regulatórios da CONAMA 357/2005 Classe 2.
+
+    Use `regulatory_compliance` quando for necessário avaliar a conformidade
+    das observações com os limites da CONAMA 357/2005 Classe 2.
+
+    Quando `regulatory_compliance` estiver disponível, não estime frequência
+    ou proporção de conformidade a partir de média, mediana, quartis, mínimo
+    ou máximo. Utilize os valores calculados pela tool.
 
     Use `search_technical_references` quando a pergunta exigir fundamentação
     técnica, interpretação ambiental ou justificativa metodológica baseada
